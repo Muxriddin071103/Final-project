@@ -37,23 +37,23 @@ public class MyConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(myFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(myFilter, UsernamePasswordAuthenticationFilter.class);
+        http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+                .cors(cors -> cors.disable());
+
+        http
+                .userDetailsService(userDetailsService());
+        http
                 .authorizeRequests()
                 .requestMatchers(UtilConfig.openPath)
                 .permitAll()
-                .requestMatchers(HttpMethod.POST, "/posts/create")
-                .hasRole("USER")
-                .requestMatchers(HttpMethod.PUT, "/posts/edit/**")
-                .hasRole("USER")
-                .requestMatchers(HttpMethod.DELETE, "/posts/delete/**")
-                .hasRole("USER")
-                .requestMatchers(HttpMethod.GET,"/posts/myPosts")
-                .hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/posts","/users","/categories")
+                .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,"/posts")
+                .hasRole("ADMIN")
                 .anyRequest()
                 .authenticated();
-
         return http.build();
     }
 

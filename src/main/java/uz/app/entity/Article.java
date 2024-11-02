@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uz.app.config.LocalDateTimeAttributeConverter;
+import uz.app.entity.enums.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +30,8 @@ public class Article {
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime publishedAt;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;

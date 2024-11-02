@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uz.app.config.JwtProvider;
 import uz.app.entity.User;
+import uz.app.entity.enums.UserRole;
 import uz.app.payload.UserDTO;
 import uz.app.repository.UserRepository;
 
@@ -27,7 +28,7 @@ public class AuthController {
                 .email(userDTO.email())
                 .password(passwordEncoder.encode(userDTO.password()))
                 .username(userDTO.username())
-                .role("USER")
+                .role(UserRole.USER)
                 .enabled(false)
                 .build();
         userRepository.save(user);
