@@ -25,8 +25,12 @@ public class Article {
     private String content;
     private String summary;
     private String imageUrl;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime publishedAt;
+
     private String status;
+
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import uz.app.config.LocalDateTimeAttributeConverter;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -28,6 +29,8 @@ public class User implements UserDetails {
     private String password;
     private String email;
     private String role;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
     private boolean enabled;
 

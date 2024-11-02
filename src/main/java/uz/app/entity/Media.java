@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.app.config.LocalDateTimeAttributeConverter;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +21,8 @@ public class Media {
 
     private String fileName;
     private String fileUrl;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime uploadedAt;
 
     @ManyToOne

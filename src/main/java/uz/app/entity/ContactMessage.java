@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+import uz.app.config.LocalDateTimeAttributeConverter;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +23,8 @@ public class ContactMessage {
     private String email;
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
 
 }

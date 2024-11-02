@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.app.config.LocalDateTimeAttributeConverter;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ public class Bookmark {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime bookmarkedAt;
 
 }

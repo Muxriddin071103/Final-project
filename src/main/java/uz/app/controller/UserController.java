@@ -29,6 +29,7 @@ public class UserController {
         User createdUser = userService.save(users);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
+    //putmappingedit
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {

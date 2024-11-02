@@ -11,7 +11,7 @@ import uz.app.service.ArticleService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/articles")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class ArticleController {
 
@@ -31,6 +31,7 @@ public class ArticleController {
         Article createdArticle = articleService.save(build);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
     }
+    //putmapping
 
     @GetMapping
     public ResponseEntity<List<Article>> getAllArticles() {
