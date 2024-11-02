@@ -18,7 +18,12 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        Category createdCategory = categoryService.save(category);
+        Category categorys = Category.builder()
+                .name(category.getName())
+                .description(category.getDescription())
+                .articles(category.getArticles())
+                .build();
+        Category createdCategory = categoryService.save(categorys);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
     }
 

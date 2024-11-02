@@ -19,7 +19,16 @@ public class ArticleController {
 
     @PostMapping
     public ResponseEntity<Article> createArticle(@RequestBody Article article) {
-        Article createdArticle = articleService.save(article);
+        Article build = Article.builder().
+                title(article.getTitle()).
+                content(article.getContent()).
+                summary(article.getSummary()).
+                imageUrl(article.getImageUrl()).
+                publishedAt(article.getPublishedAt()).
+                status(article.getStatus()).
+                category(article.getCategory()).
+                build();
+        Article createdArticle = articleService.save(build);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
     }
 

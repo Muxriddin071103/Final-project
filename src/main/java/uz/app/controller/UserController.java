@@ -18,7 +18,15 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.save(user);
+        User users = User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .enabled(user.isEnabled())
+                .build();
+        User createdUser = userService.save(users);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
