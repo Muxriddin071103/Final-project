@@ -1,53 +1,77 @@
 package uz.app.controller;
 
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Article;
+import uz.app.entity.Category;
+import uz.app.entity.Media;
+import uz.app.entity.User;
+import uz.app.entity.enums.Status;
+import uz.app.payload.ArticleDto;
+import uz.app.repository.ArticleRepository;
+import uz.app.repository.CategoryRepository;
 import uz.app.service.ArticleService;
+import uz.app.service.MediaService;
+import uz.app.service.ViewService;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class ArticleController {
+    private ArticleRepository articleRepository;
+private CategoryRepository categoryRepository;
+    @Autowired
+    MediaService mediaService;
 
-    private final ArticleService articleService;
+    @Autowired
+    private ArticleService articleService;
 
-    @PostMapping
-    public ResponseEntity<Article> createArticle(@RequestBody Article article) {
-        Article build = Article.builder().
-                title(article.getTitle()).
-                content(article.getContent()).
-                summary(article.getSummary()).
-                imageUrl(article.getImageUrl()).
-                publishedAt(article.getPublishedAt()).
-                status(article.getStatus()).
-                category(article.getCategory()).
-                build();
-        Article createdArticle = articleService.save(build);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
+    @Autowired
+    private ViewService viewService;
+
+
+    @PostMapping("/add")
+    public ResponseEntity<Article> addArticle(@Valid @RequestBody ArticleDto articleDto,
+                                              @AuthenticationPrincipal User author) {
+
+        Media media = Media.builder()
+                .fileName(articleDto.getMediaFileName())
+                .fileUrl(articleDto.getMediaFileUrl())
+                .uploadedBy(author)
+                .uploadedAt(LocalDateTime.now())                .build();
+
+         Media savedMedia = mediaService.saveMedia(media);
+
+        Optional<Category> categoryOpt = categoryRepository.findById(articleDto.getCategoryId());
+
+        if (categoryOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        Article article = Article.builder()
+                .title(articleDto.getTitle())
+                .content(articleDto.getContent())
+                .summary(articleDto.getSummary())
+                .media(savedMedia)
+                .status(Status.valueOf(articleDto.getStatus()))
+                .author(author)
+                .category(categoryOpt.get())
+                .build();
+
+        articleRepository.save(article);
+        return ResponseEntity.ok(article);
     }
-    //putmapping
 
-    @GetMapping
-    public ResponseEntity<List<Article>> getAllArticles() {
-        return ResponseEntity.ok(articleService.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Article> getArticleById(@PathVariable Long id) {
-        return articleService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArticleById(@PathVariable Long id) {
-        articleService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/articles/{id}")
+    public Article getArticle(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        Optional<Article> article = articleService.findById(id);
+        viewService.trackView(article.orElse(null), user);
+        return article.orElse(null);
     }
 }

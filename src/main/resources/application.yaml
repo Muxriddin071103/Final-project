@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/insightHub_db
+    url: jdbc:postgresql://localhost:5432/test
     username: postgres
     password: root123
   application:

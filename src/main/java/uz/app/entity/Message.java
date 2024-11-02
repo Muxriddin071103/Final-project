@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,18 +12,22 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class View {
+public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "article_id")
-    private Article article;
+    @Column(columnDefinition = "TEXT")
+    private String message;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "sender_id")
+    private User sender;
 
-    private LocalDateTime viewedAt;
+    @ManyToOne
+    @JoinColumn(name = "receiver_id")
+    private User receiver;
+
+    private Boolean isRead = false;
+    private LocalDateTime sentAt;
 }

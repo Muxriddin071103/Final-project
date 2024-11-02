@@ -22,10 +22,15 @@ public class Article {
     private Long id;
 
     private String title;
+
     @Column(columnDefinition = "TEXT")
     private String content;
+
     private String summary;
-    private String imageUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "media_id", referencedColumnName = "id")
+    private Media media;
 
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime publishedAt;
@@ -64,4 +69,3 @@ public class Article {
     )
     private List<Tag> tags;
 }
-
