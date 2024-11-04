@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Article;
 import uz.app.entity.Category;
@@ -14,9 +15,11 @@ import uz.app.entity.enums.Status;
 import uz.app.payload.ArticleDto;
 import uz.app.repository.ArticleRepository;
 import uz.app.repository.CategoryRepository;
+import uz.app.repository.UserRepository;
 import uz.app.service.ArticleService;
 import uz.app.service.MediaService;
 import uz.app.service.ViewService;
+
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -24,8 +27,11 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class ArticleController {
-    private ArticleRepository articleRepository;
-private CategoryRepository categoryRepository;
+
+
+    private final ArticleRepository articleRepository;
+    private final CategoryRepository categoryRepository;
+
     @Autowired
     MediaService mediaService;
 
@@ -34,6 +40,9 @@ private CategoryRepository categoryRepository;
 
     @Autowired
     private ViewService viewService;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @PostMapping("/add")
@@ -63,7 +72,6 @@ private CategoryRepository categoryRepository;
                 .author(author)
                 .category(categoryOpt.get())
                 .build();
-
         articleRepository.save(article);
         return ResponseEntity.ok(article);
     }
@@ -73,5 +81,17 @@ private CategoryRepository categoryRepository;
         Optional<Article> article = articleService.findById(id);
         viewService.trackView(article.orElse(null), user);
         return article.orElse(null);
+    }
+
+    @GetMapping("/articles/follow/{id}")
+    public ResponseEntity<?> getToFollowArticle(@PathVariable Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        user1.getFollowing().add(user.get());
+        user.get().getFollowers().add(user1);
+        return ResponseEntity.ok(user1);
     }
 }

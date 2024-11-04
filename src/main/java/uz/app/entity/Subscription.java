@@ -27,6 +27,4 @@ public class Subscription {
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime subscribedAt;
     private boolean isActive;
-
 }
-
