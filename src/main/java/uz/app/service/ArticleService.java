@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.app.entity.Article;
+import uz.app.entity.User;
 import uz.app.repository.ArticleRepository;
 
 import java.util.List;
@@ -29,5 +30,9 @@ public class ArticleService {
 
     public void deleteById(Long id) {
         articleRepository.deleteById(id);
+    }
+
+    public List<Article> findArticlesByAuthor(User author) {
+        return articleRepository.findByAuthor(author);
     }
 }
