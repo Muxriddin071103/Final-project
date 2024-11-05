@@ -1,5 +1,6 @@
 package uz.app.entity.enums;
 
 public enum UserRole {
-    USER, ADMIN;
+    ROLE_ADMIN,
+    ROLE_USER;
 }

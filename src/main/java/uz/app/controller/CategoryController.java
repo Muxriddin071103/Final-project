@@ -3,8 +3,10 @@ package uz.app.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Category;
+import uz.app.payload.CategoryDTO;
 import uz.app.service.CategoryService;
 
 import java.util.List;
@@ -17,13 +19,14 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        Category categorys = Category.builder()
-                .name(category.getName())
-                .description(category.getDescription())
-                .articles(category.getArticles())
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Category> createCategory(@RequestBody CategoryDTO categoryDTO) {
+        Category category = Category.builder()
+                .name(categoryDTO.name())
+                .description(categoryDTO.description())
                 .build();
-        Category createdCategory = categoryService.save(categorys);
+
+        Category createdCategory = categoryService.save(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
     }
 
@@ -40,6 +43,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCategoryById(@PathVariable Long id) {
         categoryService.deleteById(id);
         return ResponseEntity.noContent().build();

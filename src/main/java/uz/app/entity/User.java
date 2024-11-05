@@ -28,7 +28,7 @@ public class User implements UserDetails {
 
     private String username;
     private String password;
-    private String email;
+    private Integer age;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
@@ -58,10 +58,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "receiver")
     private List<Message> receivedMessages;
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
@@ -81,6 +80,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.enabled;
     }
 }

@@ -2,7 +2,6 @@ package uz.app.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,9 @@ import uz.app.entity.Category;
 import uz.app.entity.Media;
 import uz.app.entity.User;
 import uz.app.entity.enums.Status;
-import uz.app.payload.ArticleDto;
-import uz.app.repository.ArticleRepository;
-import uz.app.repository.CategoryRepository;
+import uz.app.payload.ArticleDTO;
 import uz.app.service.ArticleService;
+import uz.app.service.CategoryService;
 import uz.app.service.MediaService;
 import uz.app.service.ViewService;
 
@@ -23,55 +21,52 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/articles")
 public class ArticleController {
-    private ArticleRepository articleRepository;
-private CategoryRepository categoryRepository;
-    @Autowired
-    MediaService mediaService;
 
-    @Autowired
-    private ArticleService articleService;
-
-    @Autowired
-    private ViewService viewService;
-
+    private final MediaService mediaService;
+    private final ArticleService articleService;
+    private final CategoryService categoryService;
+    private final ViewService viewService;
 
     @PostMapping("/add")
-    public ResponseEntity<Article> addArticle(@Valid @RequestBody ArticleDto articleDto,
+    public ResponseEntity<?> addArticle(@Valid @RequestBody ArticleDTO articleDto,
                                               @AuthenticationPrincipal User author) {
 
-        Media media = Media.builder()
-                .fileName(articleDto.getMediaFileName())
-                .fileUrl(articleDto.getMediaFileUrl())
-                .uploadedBy(author)
-                .uploadedAt(LocalDateTime.now())                .build();
+        Optional<Media> mediaOpt = mediaService.getMediaById(articleDto.mediaId());
 
-         Media savedMedia = mediaService.saveMedia(media);
+        if (mediaOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
-        Optional<Category> categoryOpt = categoryRepository.findById(articleDto.getCategoryId());
+        Optional<Category> categoryOpt = categoryService.findById(articleDto.categoryId());
 
         if (categoryOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
         Article article = Article.builder()
-                .title(articleDto.getTitle())
-                .content(articleDto.getContent())
-                .summary(articleDto.getSummary())
-                .media(savedMedia)
-                .status(Status.valueOf(articleDto.getStatus()))
+                .title(articleDto.title())
+                .content(articleDto.content())
+                .summary(articleDto.summary())
+                .media(mediaOpt.get())
+                .status(Status.CREATED)
                 .author(author)
                 .category(categoryOpt.get())
+                .publishedAt(LocalDateTime.now())
                 .build();
 
-        articleRepository.save(article);
+        articleService.save(article);
         return ResponseEntity.ok(article);
     }
 
-    @GetMapping("/articles/{id}")
-    public Article getArticle(@PathVariable Long id, @AuthenticationPrincipal User user) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getArticle(@PathVariable Long id, @AuthenticationPrincipal User user) {
         Optional<Article> article = articleService.findById(id);
-        viewService.trackView(article.orElse(null), user);
-        return article.orElse(null);
+        if (article.isPresent()) {
+            viewService.trackView(article.get(), user);
+            return ResponseEntity.ok(article.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 }

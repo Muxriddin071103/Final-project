@@ -13,7 +13,6 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class UserService {
 
-
     private  final UserRepository userRepository;
 
     public User save(User user) {
@@ -32,9 +31,11 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+    public void disableUserById(Long id) {
+        userRepository.findById(id).ifPresent(user -> {
+            user.setEnabled(false);
+            userRepository.save(user);
+        });
     }
-
 
 }

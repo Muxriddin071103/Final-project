@@ -8,7 +8,10 @@ import uz.app.config.JwtProvider;
 import uz.app.entity.User;
 import uz.app.entity.enums.UserRole;
 import uz.app.payload.UserDTO;
+import uz.app.payload.LoginRequest;
 import uz.app.repository.UserRepository;
+
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,10 +28,10 @@ public class AuthController {
         }
         User user = User
                 .builder()
-                .email(userDTO.email())
                 .password(passwordEncoder.encode(userDTO.password()))
                 .username(userDTO.username())
-                .role(UserRole.USER)
+                .role(UserRole.ROLE_USER)
+                .createdAt(LocalDateTime.now())
                 .enabled(false)
                 .build();
         userRepository.save(user);
@@ -36,8 +39,8 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<?> signIn(@RequestBody UserDTO userDTO) {
-        User user = userRepository.findByUsername(userDTO.username())
+    public ResponseEntity<?> signIn(@RequestBody LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.username())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isEnabled()) {
@@ -45,7 +48,7 @@ public class AuthController {
             userRepository.save(user);
         }
 
-        if (!passwordEncoder.matches(userDTO.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
             throw new RuntimeException("Wrong password");
         }
 
