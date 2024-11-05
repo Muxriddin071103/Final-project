@@ -43,7 +43,10 @@ public class User implements UserDetails {
 
 
     @OneToMany(mappedBy = "user")
-    private List<Subscription> subscriptions;
+    private List<User> following;
+
+    @OneToMany(mappedBy = "user")
+    private List<User> followers;
 
     @OneToMany(mappedBy = "sender")
     private List<Message> sentMessages;

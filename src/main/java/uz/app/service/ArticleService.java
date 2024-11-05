@@ -16,20 +16,8 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
 
-    public Article save(Article article) {
-        return articleRepository.save(article);
-    }
-
-    public List<Article> findAll() {
-        return articleRepository.findAll();
-    }
-
     public Optional<Article> findById(Long id) {
         return articleRepository.findById(id);
-    }
-
-    public void deleteById(Long id) {
-        articleRepository.deleteById(id);
     }
 
     public List<Article> findArticlesByAuthor(User author) {
