@@ -40,14 +40,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "user")
-    private List<Bookmark> bookmarks;
 
-    @OneToMany(mappedBy = "user")
-    private List<Like> likes;
-
-    @OneToMany(mappedBy = "user")
-    private List<View> views;
 
     @OneToMany(mappedBy = "user")
     private List<Subscription> subscriptions;
