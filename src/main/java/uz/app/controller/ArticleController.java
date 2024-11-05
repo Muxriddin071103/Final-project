@@ -68,7 +68,7 @@ public class ArticleController {
                 .content(articleDto.getContent())
                 .summary(articleDto.getSummary())
                 .media(savedMedia)
-                .status(Status.valueOf(articleDto.getStatus()))
+                .status(Status.CREATED)
                 .author(author)
                 .category(categoryOpt.get())
                 .build();
@@ -83,7 +83,7 @@ public class ArticleController {
         return article.orElse(null);
     }
 
-    @GetMapping("/articles/follow/{id}")
+    @GetMapping("/articles/follow/{userId}")
     public ResponseEntity<?> getToFollowArticle(@PathVariable Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (!user.isPresent()) {
