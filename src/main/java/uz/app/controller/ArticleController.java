@@ -59,7 +59,7 @@ private CategoryRepository categoryRepository;
                 .content(articleDto.getContent())
                 .summary(articleDto.getSummary())
                 .media(savedMedia)
-                .status(Status.valueOf(articleDto.getStatus()))
+                .status(Status.CREATED)
                 .author(author)
                 .category(categoryOpt.get())
                 .build();
