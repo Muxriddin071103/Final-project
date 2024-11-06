@@ -5,9 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "messages")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,17 +19,15 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String message;
-
+    private String message; // The content of the message
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    private User sender;
-
+    private User sender; // The user who sent the message
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    private User receiver;
+    private User receiver; // The receiver (admin or user)
+    private boolean isRead; // Indicates if the message is read
+    private LocalDateTime sentAt; // Timestamp when the message was sent
 
-    private Boolean isRead = false;
-    private LocalDateTime sentAt;
+    private boolean isReply; // Flag to indicate if it's a reply
 }

@@ -10,14 +10,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArticleDTO {
-    private Long id;
+public class ArticleSummaryDTO {
     private String title;
     private String summary;
     private String mediaUrl;
-    private Long mediaId;
-    private Long categoryId;
-    private String authorUsername;
     private String categoryName;
     private LocalDateTime publishedAt;
     private String status;

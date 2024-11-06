@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface ViewRepository extends JpaRepository<View, Long> {
     Optional<View> findByArticleAndUser(Article article, User user);
+    int countByArticleId(Long articleId);
 }

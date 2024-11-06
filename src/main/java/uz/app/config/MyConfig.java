@@ -52,8 +52,6 @@ public class MyConfig {
                 .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE,"/categories/**")
                 .hasRole("ADMIN")
-                .requestMatchers("/users/**")
-                .hasRole("ADMIN")
                 .anyRequest()
                 .authenticated();
         return http.build();

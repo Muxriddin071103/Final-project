@@ -30,6 +30,7 @@ public class AuthController {
                 .builder()
                 .password(passwordEncoder.encode(userDTO.password()))
                 .username(userDTO.username())
+                .age(userDTO.age())
                 .role(UserRole.ROLE_USER)
                 .createdAt(LocalDateTime.now())
                 .enabled(false)
@@ -53,6 +54,6 @@ public class AuthController {
         }
 
         String token = jwtProvider.generateToken(user);
-        return ResponseEntity.ok().body(token);
+        return ResponseEntity.ok().body("This is your token: " + token);
     }
 }

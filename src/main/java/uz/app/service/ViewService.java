@@ -25,4 +25,8 @@ public class ViewService {
             viewRepository.save(view);
         }
     }
+
+    public int getViewsCount(Long id) {
+        return viewRepository.countByArticleId(id);
+    }
 }

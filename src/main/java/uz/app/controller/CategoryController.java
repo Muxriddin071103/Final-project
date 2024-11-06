@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Category;
+import uz.app.payload.CategoryArticlesDTO;
 import uz.app.payload.CategoryDTO;
 import uz.app.service.CategoryService;
 
@@ -31,13 +32,14 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<List<CategoryArticlesDTO>> getAllCategories() {
+        List<CategoryArticlesDTO> categoriesWithArticles = categoryService.findAllWithArticles();
+        return ResponseEntity.ok(categoriesWithArticles);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
-        return categoryService.findById(id)
+    public ResponseEntity<CategoryArticlesDTO> getCategoryById(@PathVariable Long id) {
+        return categoryService.findByIdWithArticles(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -49,3 +51,4 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 }
+

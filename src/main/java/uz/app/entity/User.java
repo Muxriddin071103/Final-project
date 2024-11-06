@@ -37,16 +37,18 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
     private boolean enabled;
 
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+    private List<Article> articles;
+
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
 
+    @OneToMany(mappedBy = "follower")
+    private List<Subscription> following;
 
-
-    @OneToMany(mappedBy = "user")
-    private List<User> following;
-
-    @OneToMany(mappedBy = "user")
-    private List<User> followers;
+    @OneToMany(mappedBy = "followed")
+    private List<Subscription> followers;
 
     @OneToMany(mappedBy = "sender")
     private List<Message> sentMessages;
