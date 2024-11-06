@@ -33,30 +33,30 @@ public class MessageController {
                                   @RequestParam String content) {
         Optional<User> receiver = userService.findUserById(receiverId);
         Message message = messageService.sendMessage(sender, receiver.orElse(null), content);
-        return mapToDTO(message); // Map to DTO before returning
+        return mapToDTO(message);
     }
 
 
-    @PostMapping("/messages/{messageId}/reply")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<MessageDTO> replyToMessage(
-            @PathVariable Long messageId,
-            @RequestParam String content,
-            @AuthenticationPrincipal User admin) {
-        Message message = messageService.replyToMessage(messageId, content, admin);
-        return ResponseEntity.ok(new MessageDTO(message.getId(), message.getMessage(),
-                convertToUserDTO(message.getSender()).getId(),
-                convertToUserDTO(message.getReceiver()).getId(),
-                message.isRead(),
-                message.getSentAt()));
-    }
-
-    private UserSmsDto convertToUserDTO(User sender) {
-        if (sender == null) {
-            return null;
-        }
-        return new UserSmsDto(sender.getId(),sender.getUsername());
-    }
+//    @PostMapping("/messages/{messageId}/reply")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    public ResponseEntity<MessageDTO> replyToMessage(
+//            @PathVariable Long messageId,
+//            @RequestParam String content,
+//            @AuthenticationPrincipal User admin) {
+//        Message message = messageService.replyToMessage(messageId, content, admin);
+//        return ResponseEntity.ok(new MessageDTO(message.getId(), message.getMessage(),
+//                convertToUserDTO(message.getSender()).getId(),
+//                convertToUserDTO(message.getReceiver()).getId(),
+//                message.isRead(),
+//                message.getSentAt()));
+//    }
+//
+//    private UserSmsDto convertToUserDTO(User sender) {
+//        if (sender == null) {
+//            return null;
+//        }
+//        return new UserSmsDto(sender.getId(),sender.getUsername());
+//    }
 
     @GetMapping("/unread/count")
     public long getUnreadMessagesCount(@AuthenticationPrincipal User admin) {
