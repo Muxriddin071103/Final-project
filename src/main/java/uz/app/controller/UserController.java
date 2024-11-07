@@ -79,24 +79,22 @@ public class UserController {
         if (currentUser.isPresent()) {
             User user = currentUser.get();
 
-            // Create ProfileDTO
             ProfileDTO profileDTO = new ProfileDTO();
             profileDTO.setUserId(user.getId());
             profileDTO.setUsername(user.getUsername());
 
-            // Set published articles from the user's articles list
             List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
                     .map(article -> new ProfileDTO.PublishedArticleDTO(
                             article.getId(),
                             article.getTitle(),
                             article.getSummary(),
-                            article.getViews().size(), // Assuming views is a list
-                            article.getLikes().size() // Assuming likes is a list
+                            article.getViews().size(),
+                            article.getLikes().size()
                     ))
                     .collect(Collectors.toList());
             profileDTO.setPublishedArticles(articles);
 
-            // Set follower IDs
+
             List<Long> followerUserIds = user.getFollowers().stream()
                     .map(subscription -> subscription.getFollower().getId())
                     .collect(Collectors.toList());

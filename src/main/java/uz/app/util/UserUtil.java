@@ -13,7 +13,7 @@ import java.util.Optional;
 public class UserUtil {
 
     private final UserService userService;
-    public UserUtil(UserService userService, UserRepository userRepository) {
+    public UserUtil(UserService userService) {
         this.userService = userService;
     }
 
