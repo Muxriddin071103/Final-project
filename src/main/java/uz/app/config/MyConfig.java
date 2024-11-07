@@ -48,6 +48,8 @@ public class MyConfig {
                 .authorizeRequests()
                 .requestMatchers(UtilConfig.openPath)
                 .permitAll()
+                .requestMatchers("/admin/**")
+                .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,"/categories/**")
                 .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE,"/categories/**")
