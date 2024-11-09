@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;

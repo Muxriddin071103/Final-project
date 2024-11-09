@@ -9,6 +9,7 @@ import uz.app.entity.*;
 import uz.app.entity.enums.Status;
 import uz.app.payload.ArticleDTO;
 import uz.app.payload.CreateArticleDTO;
+import uz.app.payload.UpdateArticleDTO;
 import uz.app.service.*;
 
 import java.time.LocalDateTime;
@@ -55,7 +56,7 @@ public class ArticleController {
                 .build();
 
         articleService.save(article);
-        return ResponseEntity.ok(article);
+        return ResponseEntity.ok("Article added successfully!");
     }
 
     @GetMapping("/{id}")
@@ -64,6 +65,11 @@ public class ArticleController {
 
         if (articleOpt.isPresent()) {
             Article article = articleOpt.get();
+
+            if(article.getStatus() == Status.DELETED){
+                return ResponseEntity.noContent().build();
+            }
+
             viewService.trackView(article, user);
             List<String> comments = commentService.findByArticleId(id)
                     .stream()
@@ -91,28 +97,137 @@ public class ArticleController {
 
     @GetMapping
     public ResponseEntity<?> getAllArticles() {
-        List<ArticleDTO> articleDTOs = articleService.findAll().stream().map(article -> {
-            List<String> comments = commentService.findByArticleId(article.getId())
-                    .stream()
-                    .map(Comment::getMessage)
-                    .collect(Collectors.toList());
+        List<ArticleDTO> articleDTOs = articleService.findAll()
+                .stream()
+                .filter(article -> article.getStatus() != Status.DELETED)
+                .map(article -> {
+                    List<String> comments = commentService.findByArticleId(article.getId())
+                            .stream()
+                            .map(Comment::getMessage)
+                            .collect(Collectors.toList());
 
-            return new ArticleDTO(
-                    article.getId(),
-                    article.getTitle(),
-                    article.getSummary(),
-                    article.getMedia().getFileName(),
-                    article.getMedia().getId(),
-                    article.getCategory().getId(),
-                    article.getAuthor().getUsername(),
-                    article.getCategory().getName(),
-                    article.getPublishedAt(),
-                    article.getStatus().name(),
-                    comments,
-                    viewService.getViewsCount(article.getId()),
-                    likeService.getLikesCountByArticle(article.getId())
-            );
-        }).collect(Collectors.toList());
+                    return new ArticleDTO(
+                            article.getId(),
+                            article.getTitle(),
+                            article.getSummary(),
+                            article.getMedia().getFileName(),
+                            article.getMedia().getId(),
+                            article.getCategory().getId(),
+                            article.getAuthor().getUsername(),
+                            article.getCategory().getName(),
+                            article.getPublishedAt(),
+                            article.getStatus().name(),
+                            comments,
+                            viewService.getViewsCount(article.getId()),
+                            likeService.getLikesCountByArticle(article.getId())
+                    );
+                }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(articleDTOs);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateArticle(@PathVariable Long id,
+                                           @Valid @RequestBody UpdateArticleDTO updateArticleDto,
+                                           @AuthenticationPrincipal User author) {
+        Optional<Article> articleOpt = articleService.findById(id);
+
+        if (articleOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Article article = articleOpt.get();
+
+        article.setTitle(updateArticleDto.getTitle());
+        article.setSummary(updateArticleDto.getSummary());
+
+        if (updateArticleDto.getMediaId() != null) {
+            Optional<Media> mediaOpt = mediaService.getMediaById(updateArticleDto.getMediaId());
+            if (mediaOpt.isPresent()) {
+                article.setMedia(mediaOpt.get());
+            } else {
+                return ResponseEntity.badRequest().body("Invalid media ID");
+            }
+        }
+
+        if (updateArticleDto.getCategoryId() != null) {
+            Optional<Category> categoryOpt = categoryService.findById(updateArticleDto.getCategoryId());
+            if (categoryOpt.isPresent()) {
+                article.setCategory(categoryOpt.get());
+            } else {
+                return ResponseEntity.badRequest().body("Invalid category ID");
+            }
+        }
+
+        try {
+            Status status = Status.valueOf(updateArticleDto.getStatus());
+            article.setStatus(status);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid status");
+        }
+
+        articleService.save(article);
+        return ResponseEntity.ok("Article updated successfully");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteArticle(@PathVariable Long id) {
+        Optional<Article> articleOpt = articleService.findById(id);
+
+        if (articleOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Article article = articleOpt.get();
+
+        if (article.getStatus() == Status.DELETED) {
+            return ResponseEntity.badRequest().body("Sorry! This article has already been deleted.");
+        }
+
+        article.setStatus(Status.DELETED);
+        articleService.save(article);
+
+        return ResponseEntity.ok("Article marked as deleted successfully");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchArticles(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long authorId) {
+
+        List<Article> articles = articleService.searchArticles(title, categoryId, authorId);
+
+        if (articles.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<ArticleDTO> articleDTOs = articles
+                .stream()
+                .filter(article -> article.getStatus() != Status.DELETED)
+                .map(article -> {
+                    List<String> comments = commentService.findByArticleId(article.getId())
+                            .stream()
+                            .map(Comment::getMessage)
+                            .collect(Collectors.toList());
+
+                    return new ArticleDTO(
+                            article.getId(),
+                            article.getTitle(),
+                            article.getSummary(),
+                            article.getMedia().getFileName(),
+                            article.getMedia().getId(),
+                            article.getCategory().getId(),
+                            article.getAuthor().getUsername(),
+                            article.getCategory().getName(),
+                            article.getPublishedAt(),
+                            article.getStatus().name(),
+                            comments,
+                            viewService.getViewsCount(article.getId()),
+                            likeService.getLikesCountByArticle(article.getId())
+                    );
+                })
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(articleDTOs);
     }

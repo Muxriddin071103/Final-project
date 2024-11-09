@@ -49,4 +49,21 @@ public class ArticleService {
         )).collect(Collectors.toList());
     }
 
+    public List<Article> searchArticles(String title, Long categoryId, Long authorId) {
+        if (title != null && !title.isEmpty()) {
+            return articleRepository.findByTitleContainingIgnoreCase(title);
+        }
+        if (categoryId != null) {
+            return articleRepository.findByCategoryId(categoryId);
+        }
+        if (authorId != null) {
+            return articleRepository.findByAuthorId(authorId);
+        }
+        return articleRepository.findAll();
+    }
+
+    public Optional<Article> findArticleByMediaId(Long mediaId) {
+        return articleRepository.findByMediaId(mediaId);
+    }
+
 }

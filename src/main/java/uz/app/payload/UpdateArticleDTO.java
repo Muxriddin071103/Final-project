@@ -9,16 +9,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateArticleDTO {
-    @NotBlank(message = "Title cannot be blank")
+public class UpdateArticleDTO {
+    @NotBlank
     private String title;
-
-    @NotBlank(message = "Summary cannot be blank")
+    @NotBlank
     private String summary;
-
-    @NotNull(message = "Media ID cannot be null")
     private Long mediaId;
-
-    @NotNull(message = "Category ID cannot be null")
     private Long categoryId;
+    @NotNull
+    private String status; // e.g., "PUBLISHED" or "DRAFT"
 }

@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MediaDto {
-    private Long id;
     private String fileName;
     private String fileUrl;
     private LocalDateTime uploadedAt;

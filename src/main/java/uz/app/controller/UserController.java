@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Article;
 import uz.app.entity.Bookmark;
 import uz.app.entity.User;
+import uz.app.entity.enums.Status;
 import uz.app.payload.ArticleSummaryDTO;
 import uz.app.payload.BookmarkDTO;
 import uz.app.payload.ProfileDTO;
@@ -49,7 +50,10 @@ public class UserController {
     public ResponseEntity<?> getUserArticles() {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
-            List<Article> articles = articleService.findArticlesByAuthor(currentUser.get());
+            List<Article> articles = articleService.findArticlesByAuthor(currentUser.get())
+                    .stream()
+                    .filter(article -> article.getStatus() != Status.DELETED) // Exclude DELETED articles
+                    .collect(Collectors.toList());
             List<ArticleSummaryDTO> articleSummaryDTOs = articleService.convertToSummaryDto(articles);
             return ResponseEntity.ok(articleSummaryDTOs);
         }
@@ -79,24 +83,22 @@ public class UserController {
         if (currentUser.isPresent()) {
             User user = currentUser.get();
 
-            // Create ProfileDTO
             ProfileDTO profileDTO = new ProfileDTO();
             profileDTO.setUserId(user.getId());
             profileDTO.setUsername(user.getUsername());
 
-            // Set published articles from the user's articles list
             List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
+                    .filter(article -> article.getStatus() != Status.DELETED)
                     .map(article -> new ProfileDTO.PublishedArticleDTO(
                             article.getId(),
                             article.getTitle(),
                             article.getSummary(),
-                            article.getViews().size(), // Assuming views is a list
-                            article.getLikes().size() // Assuming likes is a list
+                            article.getViews().size(),
+                            article.getLikes().size()
                     ))
                     .collect(Collectors.toList());
             profileDTO.setPublishedArticles(articles);
 
-            // Set follower IDs
             List<Long> followerUserIds = user.getFollowers().stream()
                     .map(subscription -> subscription.getFollower().getId())
                     .collect(Collectors.toList());
@@ -106,6 +108,4 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
-
-
 }

@@ -5,10 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.app.dto.MediaDto;
+import uz.app.entity.Article;
 import uz.app.entity.Media;
+import uz.app.service.ArticleService;
 import uz.app.service.MediaService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 public class MediaController {
 
     private final MediaService mediaService;
+    private final ArticleService articleService;
 
     @GetMapping
     public List<MediaDto> getAllMedia() {
@@ -40,14 +44,25 @@ public class MediaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMediaById(@PathVariable Long id) {
+    public ResponseEntity<String> deleteMediaById(@PathVariable Long id) {
+        // Check if the media exists
+        Optional<Media> mediaOpt = mediaService.getMediaById(id);
+        if (mediaOpt.isEmpty()) {
+            return new ResponseEntity<>("Sorry! But this media has already been deleted.", HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<Article> articleOpt = articleService.findArticleByMediaId(id);
+        if (articleOpt.isPresent()) {
+            String articleTitle = articleOpt.get().getTitle();
+            return new ResponseEntity<>("Sorry! This media is used in article: " + articleTitle, HttpStatus.BAD_REQUEST);
+        }
+
         mediaService.deleteMediaById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     private MediaDto convertToDto(Media media) {
         return new MediaDto(
-                media.getId(),
                 media.getFileName(),
                 media.getFileUrl(),
                 media.getUploadedAt()
@@ -56,7 +71,6 @@ public class MediaController {
 
     private Media convertToEntity(MediaDto mediaDto) {
         return Media.builder()
-                .id(mediaDto.getId())
                 .fileName(mediaDto.getFileName())
                 .fileUrl(mediaDto.getFileUrl())
                 .uploadedAt(mediaDto.getUploadedAt())

@@ -13,6 +13,7 @@ import uz.app.service.MessageService;
 import uz.app.service.UserService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,7 +27,7 @@ public class AdminController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ProfileDTO>> getAllUsers() {
-        List<User> users = userService.findAllUsers(); // Retrieves all users from the UserService
+        List<User> users = userService.findAllUsers();
         List<ProfileDTO> userProfiles = users.stream()
                 .map(this::convertToProfileDTO)
                 .collect(Collectors.toList());
@@ -64,6 +65,24 @@ public class AdminController {
             @AuthenticationPrincipal User admin) {
         Message message = messageService.replyToMessage(messageId, content, admin);
         return ResponseEntity.ok(mapToDTO(message));
+    }
+
+    @GetMapping("/conversation/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<MessageDTO>> getConversation(@AuthenticationPrincipal User admin,
+                                                            @PathVariable Long userId) {
+        Optional<User> sender = userService.findUserById(userId);
+        if (sender.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Message> messages = messageService.getConversation(sender.get(), admin);
+        messageService.markAllAsRead(messages);
+
+        List<MessageDTO> messageDTOs = messages.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(messageDTOs);
     }
 
     private MessageDTO mapToDTO(Message message) {

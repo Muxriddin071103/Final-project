@@ -1,16 +1,12 @@
 package uz.app.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Message;
 import uz.app.entity.User;
 import uz.app.payload.MessageDTO;
-import uz.app.payload.UserDTO;
-import uz.app.payload.UserSmsDto;
 import uz.app.service.MessageService;
 import uz.app.service.UserService;
 
@@ -25,37 +21,21 @@ public class MessageController {
 
     private final MessageService messageService;
     private final UserService userService;
-    
+
     @PostMapping("/send")
     @PreAuthorize("hasRole('ROLE_USER')")
     public MessageDTO sendMessage(@AuthenticationPrincipal User sender,
-                                  @RequestParam Long receiverId,
                                   @RequestParam String content) {
+        Long receiverId = 1L;
         Optional<User> receiver = userService.findUserById(receiverId);
-        Message message = messageService.sendMessage(sender, receiver.orElse(null), content);
+
+        if (receiver.isEmpty()) {
+            throw new IllegalArgumentException("Receiver with ID 1 not found");
+        }
+
+        Message message = messageService.sendMessage(sender, receiver.get(), content);
         return mapToDTO(message);
     }
-
-/*    @PostMapping("/messages/{messageId}/reply")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<MessageDTO> replyToMessage(
-            @PathVariable Long messageId,
-            @RequestParam String content,
-            @AuthenticationPrincipal User admin) {
-        Message message = messageService.replyToMessage(messageId, content, admin);
-        return ResponseEntity.ok(new MessageDTO(message.getId(), message.getMessage(),
-                convertToUserDTO(message.getSender()).getId(),
-                convertToUserDTO(message.getReceiver()).getId(),
-                message.isRead(),
-                message.getSentAt()));
-    }
-
-    private UserSmsDto convertToUserDTO(User sender) {
-        if (sender == null) {
-            return null;
-        }
-        return new UserSmsDto(sender.getId(),sender.getUsername());
-    }*/
 
     @GetMapping("/unread/count")
     public long getUnreadMessagesCount(@AuthenticationPrincipal User admin) {
@@ -65,8 +45,16 @@ public class MessageController {
     @GetMapping("/conversation/{userId}")
     public List<MessageDTO> getConversation(@AuthenticationPrincipal User admin,
                                             @PathVariable Long userId) {
-        Optional<User> user = userService.findUserById(userId);
-        List<Message> messages = messageService.getConversation(user.orElse(null), admin);
+        Long senderId = 1L;
+
+        Optional<User> sender = userService.findUserById(senderId);
+        Optional<User> receiver = userService.findUserById(userId);
+
+        if (sender.isEmpty() || receiver.isEmpty()) {
+            throw new IllegalArgumentException("User not found for sender or receiver ID");
+        }
+
+        List<Message> messages = messageService.getConversation(sender.get(), receiver.get());
 
         messageService.markAllAsRead(messages);
 
