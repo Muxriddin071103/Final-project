@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Message;
 import uz.app.entity.User;
 import uz.app.payload.MessageDTO;
-import uz.app.payload.UserDTO;
-import uz.app.payload.UserSmsDto;
 import uz.app.service.MessageService;
 import uz.app.service.UserService;
 

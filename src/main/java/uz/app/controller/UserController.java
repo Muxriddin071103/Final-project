@@ -37,7 +37,7 @@ public class UserController {
 
 
             if (!passwordEncoder.matches(updateProfileDTO.oldPassword(), user.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Eski parol noto‘g‘ri");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("old password is incorrect");
             }
 
             user.setFirstName(updateProfileDTO.firstName());
@@ -95,23 +95,30 @@ public class UserController {
             ProfileDTO profileDTO = new ProfileDTO();
             profileDTO.setUserId(user.getId());
             profileDTO.setUsername(user.getUsername());
+            System.out.println("user: " + user.getUsername());
+            if (user.getArticles() != null) {
+                List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
+                        .map(article -> new ProfileDTO.PublishedArticleDTO(
+                                article.getId(),
+                                article.getTitle(),
+                                article.getSummary(),
+                                article.getViews().size(),
+                                article.getLikes().size()
+                        ))
+                        .collect(Collectors.toList());
+                profileDTO.setPublishedArticles(articles);
+            } else {
+                System.out.println("article not found");
+            }
 
-            List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
-                    .map(article -> new ProfileDTO.PublishedArticleDTO(
-                            article.getId(),
-                            article.getTitle(),
-                            article.getSummary(),
-                            article.getViews().size(),
-                            article.getLikes().size()
-                    ))
-                    .collect(Collectors.toList());
-            profileDTO.setPublishedArticles(articles);
-
-
-            List<Long> followerUserIds = user.getFollowers().stream()
-                    .map(subscription -> subscription.getFollower().getId())
-                    .collect(Collectors.toList());
-            profileDTO.setFollowerIds(followerUserIds);
+            if (user.getFollowers() != null) {
+                List<Long> followerUserIds = user.getFollowers().stream()
+                        .map(subscription -> subscription.getFollower().getId())
+                        .collect(Collectors.toList());
+                profileDTO.setFollowerIds(followerUserIds);
+            } else {
+                System.out.println("subscriber not found");
+            }
 
             return ResponseEntity.ok(profileDTO);
         }
