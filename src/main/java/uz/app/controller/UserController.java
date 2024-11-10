@@ -1,16 +1,14 @@
 package uz.app.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Article;
 import uz.app.entity.Bookmark;
 import uz.app.entity.User;
-import uz.app.payload.ArticleSummaryDTO;
-import uz.app.payload.BookmarkDTO;
-import uz.app.payload.ProfileDTO;
-import uz.app.payload.UserDTO;
+import uz.app.payload.*;
 import uz.app.service.ArticleService;
 import uz.app.service.BookmarkService;
 import uz.app.service.UserService;
@@ -32,18 +30,33 @@ public class UserController {
     private final BookmarkService bookmarkService;
 
     @PutMapping
-    public ResponseEntity<?> updateUserProfile(@RequestBody UserDTO userDto) {
+    public ResponseEntity<?> updateUserProfile(@RequestBody UpdateProfileDTO updateProfileDTO) {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
             User user = currentUser.get();
-            user.setUsername(userDto.username());
-            user.setPassword(passwordEncoder.encode(userDto.password()));
-            user.setAge(userDto.age());
+
+
+            if (!passwordEncoder.matches(updateProfileDTO.oldPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Eski parol noto‘g‘ri");
+            }
+
+            user.setFirstName(updateProfileDTO.firstName());
+            user.setLastName(updateProfileDTO.lastName());
+            user.setUsername(updateProfileDTO.username());
+
+
+            if (updateProfileDTO.newPassword() != null && !updateProfileDTO.newPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(updateProfileDTO.newPassword()));
+            }
+
+            user.setAge(updateProfileDTO.age());
             User savedUser = userService.save(user);
             return ResponseEntity.ok(savedUser);
         }
         return ResponseEntity.notFound().build();
     }
+
+
 
     @GetMapping("/articles")
     public ResponseEntity<?> getUserArticles() {

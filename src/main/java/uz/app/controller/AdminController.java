@@ -26,7 +26,7 @@ public class AdminController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ProfileDTO>> getAllUsers() {
-        List<User> users = userService.findAllUsers(); // Retrieves all users from the UserService
+        List<User> users = userService.findAllUsers();
         List<ProfileDTO> userProfiles = users.stream()
                 .map(this::convertToProfileDTO)
                 .collect(Collectors.toList());

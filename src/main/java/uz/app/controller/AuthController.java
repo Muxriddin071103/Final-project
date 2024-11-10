@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.app.config.JwtProvider;
 import uz.app.entity.User;
 import uz.app.entity.enums.UserRole;
+import uz.app.payload.SignUpDTO;
 import uz.app.payload.UserDTO;
 import uz.app.payload.LoginRequest;
 import uz.app.repository.UserRepository;
@@ -22,19 +23,22 @@ public class AuthController {
     private final JwtProvider jwtProvider;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signUp(@RequestBody UserDTO userDTO) {
-        if (userRepository.existsByUsername(userDTO.username())) {
+    public ResponseEntity<?> signUp(@RequestBody SignUpDTO signUpDTO) {
+        if (userRepository.existsByUsername(signUpDTO.username())) {
             throw new RuntimeException("Username is already in use");
         }
-        User user = User
-                .builder()
-                .password(passwordEncoder.encode(userDTO.password()))
-                .username(userDTO.username())
-                .age(userDTO.age())
+
+        User user = User.builder()
+                .firstName(signUpDTO.firstName())
+                .lastName(signUpDTO.lastName())
+                .password(passwordEncoder.encode(signUpDTO.password()))
+                .username(signUpDTO.username())
+                .age(signUpDTO.age())
                 .role(UserRole.ROLE_USER)
                 .createdAt(LocalDateTime.now())
                 .enabled(false)
                 .build();
+
         userRepository.save(user);
         return ResponseEntity.ok().body(user);
     }
