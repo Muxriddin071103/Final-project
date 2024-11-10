@@ -1,5 +1,8 @@
 package uz.app.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,12 @@ public class UserController {
     private final BookmarkService bookmarkService;
 
     @PutMapping
+    @Operation(summary = "Update user profile", description = "Allows user to update profile with current and new password verification")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+            @ApiResponse(responseCode = "403", description = "The password was entered incorrectly. Please try again."),
+            @ApiResponse(responseCode = "404", description = "User notfound")
+    })
     public ResponseEntity<?> updateUserProfile(@RequestBody UpdateProfileDTO updateProfileDTO) {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
