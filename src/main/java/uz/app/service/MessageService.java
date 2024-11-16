@@ -1,7 +1,7 @@
 package uz.app.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.app.entity.Message;
 import uz.app.entity.User;
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class MessageService {
 
-    @Autowired
-    private MessageRepository messageRepository;
+    private final MessageRepository messageRepository;
 
     public Message sendMessage(User sender, User receiver, String content) {
         if (receiver == null) {
@@ -55,6 +55,10 @@ public class MessageService {
         return messageRepository.findByReceiverAndIsReadFalse(receiver).size();
     }
 
+    public List<Message> getUnreadMessagesForUser(User receiver) {
+        return messageRepository.findByReceiverAndIsReadFalse(receiver);
+    }
+
     public List<Message> getConversation(User user, User admin) {
         if (user == null || admin == null) {
             throw new IllegalArgumentException("User or Admin cannot be null");
@@ -65,9 +69,14 @@ public class MessageService {
     public void markAllAsRead(List<Message> messages) {
         for (Message message : messages) {
             if (!message.isRead()) {
-                message.setRead(true); // Set the read status to true
-                messageRepository.save(message); // Save the updated message back to the database
+                message.setRead(true);
+                messageRepository.save(message);
             }
         }
     }
+
+    public List<Message> getUnreadMessagesForAdmin(Long recieverId) {
+        return messageRepository.findByReceiverIdAndIsReadFalse(recieverId);
+    }
+
 }

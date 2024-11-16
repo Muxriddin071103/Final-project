@@ -1,7 +1,6 @@
 package uz.app.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.app.entity.Category;
 import uz.app.payload.CategoryArticleItemDTO;
@@ -13,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@RequiredArgsConstructor
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -34,15 +33,16 @@ public class CategoryService {
         return categoryRepository
                 .findById(id)
                 .map(category -> {
-            List<CategoryArticleItemDTO> articles = category.getArticles().stream()
-                    .map(article -> new CategoryArticleItemDTO(
-                            article.getTitle(),
-                            article.getSummary()
-                    ))
-                    .collect(Collectors.toList());
+                    List<CategoryArticleItemDTO> articles = category.getArticles().stream()
+                            .map(article -> new CategoryArticleItemDTO(
+                                    article.getId(),
+                                    article.getTitle(),
+                                    article.getSummary()
+                            ))
+                            .collect(Collectors.toList());
 
-            return new CategoryArticlesDTO(category.getName(), articles);
-        });
+                    return new CategoryArticlesDTO(category.getId(),category.getName(), articles);
+                });
     }
 
     public List<CategoryArticlesDTO> findAllWithArticles() {
@@ -52,12 +52,13 @@ public class CategoryService {
                 .map(category -> {
                     List<CategoryArticleItemDTO> articles = category.getArticles().stream()
                             .map(article -> new CategoryArticleItemDTO(
+                                    article.getId(),
                                     article.getTitle(),
                                     article.getSummary()
                             ))
                             .collect(Collectors.toList());
 
-                    return new CategoryArticlesDTO(category.getName(), articles);
+                    return new CategoryArticlesDTO(category.getId(),category.getName(), articles);
                 })
                 .collect(Collectors.toList());
     }

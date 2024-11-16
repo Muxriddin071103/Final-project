@@ -36,15 +36,13 @@ public class SubscriptionService {
         subscription.setFollower(follower);
         subscription.setFollowed(followed);
         subscription.setSubscribedAt(LocalDateTime.now());
-        subscription.setActive(true);
 
         Subscription savedSubscription = subscriptionRepository.save(subscription);
 
         return new SubscriptionDTO(
                 savedSubscription.getFollower().getId(),
                 savedSubscription.getFollowed().getId(),
-                savedSubscription.getSubscribedAt(),
-                savedSubscription.isActive()
+                savedSubscription.getSubscribedAt()
         );
     }
 
@@ -55,7 +53,6 @@ public class SubscriptionService {
         Subscription subscription = subscriptionRepository.findByFollower_IdAndFollowed_Id(follower.getId(), followedId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-        subscription.setActive(false);
-        subscriptionRepository.save(subscription);
+        subscriptionRepository.delete(subscription);
     }
 }

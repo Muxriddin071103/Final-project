@@ -13,5 +13,4 @@ public class SubscriptionDTO {
     private Long followerId;
     private Long followedId;
     private LocalDateTime subscribedAt;
-    private boolean isActive;
 }

@@ -19,15 +19,15 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String message; // The content of the message
+    private String message;
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    private User sender; // The user who sent the message
+    private User sender;
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    private User receiver; // The receiver (admin or user)
-    private boolean isRead; // Indicates if the message is read
-    private LocalDateTime sentAt; // Timestamp when the message was sent
+    private User receiver;
+    private boolean isRead;
+    private LocalDateTime sentAt;
 
-    private boolean isReply; // Flag to indicate if it's a reply
+    private boolean isReply;
 }

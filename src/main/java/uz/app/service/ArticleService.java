@@ -37,6 +37,7 @@ public class ArticleService {
 
     public List<ArticleSummaryDTO> convertToSummaryDto(List<Article> articles) {
         return articles.stream().map(article -> new ArticleSummaryDTO(
+                article.getId(),
                 article.getTitle(),
                 article.getSummary(),
                 article.getMedia() != null ? article.getMedia().getFileName() : null,

@@ -17,5 +17,5 @@ public class UpdateArticleDTO {
     private Long mediaId;
     private Long categoryId;
     @NotNull
-    private String status; // e.g., "PUBLISHED" or "DRAFT"
+    private String status;
 }

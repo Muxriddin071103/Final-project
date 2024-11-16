@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArticleSummaryDTO {
+    private Long id;
     private String title;
     private String summary;
     private String mediaUrl;

@@ -23,7 +23,7 @@ public class UserUtil {
             String username = ((UserDetails) principal).getUsername();
             return userService.findByUsername(username);
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 }

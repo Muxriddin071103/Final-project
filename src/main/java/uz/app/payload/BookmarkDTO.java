@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookmarkDTO {
     private Long id;
-    private Long articleId;
+    private ArticleSummaryDTO articleSummaryDTO;
     private Long userId;
     private LocalDateTime bookmarkedAt;
 }

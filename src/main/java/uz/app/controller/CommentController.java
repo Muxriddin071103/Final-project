@@ -9,6 +9,7 @@ import uz.app.entity.Article;
 import uz.app.entity.Comment;
 import uz.app.entity.User;
 import uz.app.payload.CommentDTO;
+import uz.app.payload.CommentDTOForView;
 import uz.app.service.ArticleService;
 import uz.app.service.CommentService;
 
@@ -51,14 +52,12 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
 
-        List<CommentDTO> comments = commentService.findByArticleId(articleOpt.get().getId())
+        List<CommentDTOForView> comments = commentService.findByArticleId(articleOpt.get().getId())
                 .stream()
-                .map(comment -> new CommentDTO(
+                .map(comment -> new CommentDTOForView(
                         comment.getId(),
                         comment.getArticle().getId(),
-                        comment.getUser().getId(),
-                        comment.getMessage(),
-                        comment.getCreatedAt()))
+                        comment.getMessage()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(comments);

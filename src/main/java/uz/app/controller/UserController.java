@@ -1,17 +1,17 @@
 package uz.app.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import uz.app.entity.Article;
 import uz.app.entity.Bookmark;
 import uz.app.entity.User;
-import uz.app.entity.enums.Status;
-import uz.app.payload.ArticleSummaryDTO;
-import uz.app.payload.BookmarkDTO;
-import uz.app.payload.ProfileDTO;
-import uz.app.payload.UserDTO;
+import uz.app.payload.*;
 import uz.app.service.ArticleService;
 import uz.app.service.BookmarkService;
 import uz.app.service.UserService;
@@ -33,13 +33,30 @@ public class UserController {
     private final BookmarkService bookmarkService;
 
     @PutMapping
-    public ResponseEntity<?> updateUserProfile(@RequestBody UserDTO userDto) {
+    @Operation(summary = "Update user profile", description = "Allows user to update profile with current and new password verification")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+            @ApiResponse(responseCode = "403", description = "The password was entered incorrectly. Please try again."),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<?> updateUserProfile(@RequestBody UpdateProfileDTO updateProfileDTO) {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
             User user = currentUser.get();
-            user.setUsername(userDto.username());
-            user.setPassword(passwordEncoder.encode(userDto.password()));
-            user.setAge(userDto.age());
+
+            if (!passwordEncoder.matches(updateProfileDTO.oldPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("old password is incorrect");
+            }
+
+            user.setFirstName(updateProfileDTO.firstName());
+            user.setLastName(updateProfileDTO.lastName());
+            user.setUsername(updateProfileDTO.username());
+
+            if (updateProfileDTO.newPassword() != null && !updateProfileDTO.newPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(updateProfileDTO.newPassword()));
+            }
+
+            user.setAge(updateProfileDTO.age());
             User savedUser = userService.save(user);
             return ResponseEntity.ok(savedUser);
         }
@@ -50,10 +67,7 @@ public class UserController {
     public ResponseEntity<?> getUserArticles() {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
-            List<Article> articles = articleService.findArticlesByAuthor(currentUser.get())
-                    .stream()
-                    .filter(article -> article.getStatus() != Status.DELETED) // Exclude DELETED articles
-                    .collect(Collectors.toList());
+            List<Article> articles = articleService.findArticlesByAuthor(currentUser.get());
             List<ArticleSummaryDTO> articleSummaryDTOs = articleService.convertToSummaryDto(articles);
             return ResponseEntity.ok(articleSummaryDTOs);
         }
@@ -66,12 +80,28 @@ public class UserController {
         if (currentUser.isPresent()) {
             List<Bookmark> bookmarks = bookmarkService.findByUser(currentUser.get());
             List<BookmarkDTO> bookmarkDTOs = bookmarks.stream()
-                    .map(bookmark -> new BookmarkDTO(
-                            bookmark.getId(),
-                            bookmark.getArticle().getId(),
-                            bookmark.getUser().getId(),
-                            bookmark.getBookmarkedAt()
-                    )).collect(Collectors.toList());
+                    .map(bookmark -> {
+                        Article article = bookmark.getArticle();
+                        ArticleSummaryDTO articleSummaryDTO = new ArticleSummaryDTO(
+                                article.getId(),
+                                article.getTitle(),
+                                article.getSummary(),
+                                article.getMedia().getFileName(),
+                                article.getCategory().getName(),
+                                article.getPublishedAt(),
+                                article.getStatus().name(),
+                                article.getComments().stream().map(comment -> comment.getMessage()).collect(Collectors.toList()),
+                                article.getViews().size(),
+                                article.getLikes().size()
+                        );
+                        return new BookmarkDTO(
+                                bookmark.getId(),
+                                articleSummaryDTO,
+                                bookmark.getUser().getId(),
+                                bookmark.getBookmarkedAt()
+                        );
+                    })
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(bookmarkDTOs);
         }
         return ResponseEntity.notFound().build();
@@ -86,26 +116,35 @@ public class UserController {
             ProfileDTO profileDTO = new ProfileDTO();
             profileDTO.setUserId(user.getId());
             profileDTO.setUsername(user.getUsername());
+            if (user.getArticles() != null) {
+                List<ProfileDTO.PublishedArticleDTO> articles = user
+                        .getArticles()
+                        .stream()
+                        .map(article -> new ProfileDTO.PublishedArticleDTO(
+                                article.getId(),
+                                article.getTitle(),
+                                article.getSummary(),
+                                article.getViews().size(),
+                                article.getLikes().size()
+                        ))
+                        .collect(Collectors.toList());
+                profileDTO.setPublishedArticles(articles);
+            } else {
+                System.out.println("article not found");
+            }
 
-            List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
-                    .filter(article -> article.getStatus() != Status.DELETED)
-                    .map(article -> new ProfileDTO.PublishedArticleDTO(
-                            article.getId(),
-                            article.getTitle(),
-                            article.getSummary(),
-                            article.getViews().size(),
-                            article.getLikes().size()
-                    ))
-                    .collect(Collectors.toList());
-            profileDTO.setPublishedArticles(articles);
-
-            List<Long> followerUserIds = user.getFollowers().stream()
-                    .map(subscription -> subscription.getFollower().getId())
-                    .collect(Collectors.toList());
-            profileDTO.setFollowerIds(followerUserIds);
+            if (user.getFollowers() != null) {
+                List<Long> followerUserIds = user.getFollowers().stream()
+                        .map(subscription -> subscription.getFollower().getId())
+                        .collect(Collectors.toList());
+                profileDTO.setFollowerIds(followerUserIds);
+            } else {
+                System.out.println("subscriber not found");
+            }
 
             return ResponseEntity.ok(profileDTO);
         }
         return ResponseEntity.notFound().build();
     }
+
 }

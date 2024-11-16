@@ -13,8 +13,19 @@ import java.time.LocalDateTime;
 public class MessageDTO {
     private Long id;
     private String content;
-    private Long senderId; // Changed to just sender ID
-    private Long receiverId; // Changed to just receiver ID
+    private UserDTO senderId;
+    private UserDTO receiverId;
     private boolean isRead;
     private LocalDateTime sentAt;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserDTO{
+        private Long id;
+        private String firstName;
+        private String lastName;
+    }
 }
+
+

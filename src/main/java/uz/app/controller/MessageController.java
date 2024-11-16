@@ -1,6 +1,7 @@
 package uz.app.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -61,12 +62,29 @@ public class MessageController {
         return messages.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    @GetMapping("/unread")
+    public ResponseEntity<?> getUnreadMessages(@AuthenticationPrincipal User user) {
+        List<Message> unreadMessages = messageService.getUnreadMessagesForUser(user);
+        List<MessageDTO> unreadMessageDTOs = unreadMessages.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(unreadMessageDTOs);
+    }
+
     private MessageDTO mapToDTO(Message message) {
         return new MessageDTO(
                 message.getId(),
                 message.getMessage(),
-                message.getSender().getId(),
-                message.getReceiver().getId(),
+                new MessageDTO.UserDTO(
+                        message.getSender().getId(),
+                        message.getSender().getFirstName(),
+                        message.getSender().getLastName()
+                ),
+                new MessageDTO.UserDTO(
+                        message.getReceiver().getId(),
+                        message.getReceiver().getFirstName(),
+                        message.getReceiver().getLastName()
+                ),
                 message.isRead(),
                 message.getSentAt()
         );

@@ -1,5 +1,7 @@
 package uz.app.controller;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +28,9 @@ public class AdminController {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ApiResponses(
+            @ApiResponse(responseCode = "403", description = "Sorry! But this is only for ADMIN!!!")
+    )
     public ResponseEntity<List<ProfileDTO>> getAllUsers() {
         List<User> users = userService.findAllUsers();
         List<ProfileDTO> userProfiles = users.stream()
@@ -59,6 +64,9 @@ public class AdminController {
 
     @PostMapping("/messages/{messageId}/reply")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ApiResponses(
+            @ApiResponse(responseCode = "403", description = "Sorry! But this is only for ADMIN!!!")
+    )
     public ResponseEntity<MessageDTO> replyToMessage(
             @PathVariable Long messageId,
             @RequestParam String content,
@@ -69,6 +77,9 @@ public class AdminController {
 
     @GetMapping("/conversation/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ApiResponses(
+            @ApiResponse(responseCode = "403", description = "Sorry! But this is only for ADMIN!!!")
+    )
     public ResponseEntity<List<MessageDTO>> getConversation(@AuthenticationPrincipal User admin,
                                                             @PathVariable Long userId) {
         Optional<User> sender = userService.findUserById(userId);
@@ -85,12 +96,33 @@ public class AdminController {
         return ResponseEntity.ok(messageDTOs);
     }
 
+    @GetMapping("/unreadMessages")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ApiResponses(
+            @ApiResponse(responseCode = "403", description = "Sorry! But this is only for ADMIN!!!")
+    )
+    public ResponseEntity<List<MessageDTO>> unreadMessagesForAdmin(@AuthenticationPrincipal User admin) {
+        List<Message> unreadMessages = messageService.getUnreadMessagesForAdmin(admin.getId());
+        List<MessageDTO> unreadMessageDTOs = unreadMessages.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(unreadMessageDTOs);
+    }
+
     private MessageDTO mapToDTO(Message message) {
         return new MessageDTO(
                 message.getId(),
                 message.getMessage(),
-                message.getSender().getId(),
-                message.getReceiver().getId(),
+                new MessageDTO.UserDTO(
+                        message.getSender().getId(),
+                        message.getSender().getFirstName(),
+                        message.getSender().getLastName()
+                ),
+                new MessageDTO.UserDTO(
+                        message.getReceiver().getId(),
+                        message.getReceiver().getFirstName(),
+                        message.getReceiver().getLastName()
+                ),
                 message.isRead(),
                 message.getSentAt()
         );

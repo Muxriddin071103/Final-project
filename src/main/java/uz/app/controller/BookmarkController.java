@@ -5,14 +5,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import uz.app.entity.Article;
 import uz.app.entity.Bookmark;
 import uz.app.entity.User;
+import uz.app.payload.ArticleSummaryDTO;
 import uz.app.payload.BookmarkDTO;
 import uz.app.service.ArticleService;
 import uz.app.service.BookmarkService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/bookmarks")
@@ -51,11 +54,25 @@ public class BookmarkController {
     }
 
     private BookmarkDTO convertToDto(Bookmark bookmark) {
+        Article article = bookmark.getArticle();
+        ArticleSummaryDTO articleSummaryDTO = new ArticleSummaryDTO(
+                article.getId(),
+                article.getTitle(),
+                article.getSummary(),
+                article.getMedia().getFileName(),
+                article.getCategory().getName(),
+                article.getPublishedAt(),
+                article.getStatus().name(),
+                article.getComments().stream().map(comment -> comment.getMessage()).collect(Collectors.toList()),
+                article.getViews().size(),
+                article.getLikes().size()
+        );
         return new BookmarkDTO(
                 bookmark.getId(),
-                bookmark.getArticle().getId(),
+                articleSummaryDTO,
                 bookmark.getUser().getId(),
                 bookmark.getBookmarkedAt()
         );
     }
+
 }

@@ -9,4 +9,6 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByReceiverAndIsReadFalse(User receiver);
     List<Message> findBySenderAndReceiver(User sender, User receiver);
+    List<Message> findByReceiverIdAndIsReadFalse(Long receiverId);
+
 }

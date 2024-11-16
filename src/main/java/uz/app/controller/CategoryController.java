@@ -1,5 +1,7 @@
 package uz.app.controller;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,9 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ApiResponses(
+            @ApiResponse(responseCode = "403", description = "Sorry! But this is only for ADMIN!!!")
+    )
     public ResponseEntity<Category> createCategory(@RequestBody CategoryDTO categoryDTO) {
         Category category = Category.builder()
                 .name(categoryDTO.name())
