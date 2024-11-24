@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import uz.app.config.LocalDateTimeAttributeConverter;
+import uz.app.entity.enums.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,14 +21,19 @@ public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String title;
-    @Column(columnDefinition = "TEXT")
-    private String content;
     private String summary;
-    private String imageUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "media_id", referencedColumnName = "id")
+    private Media media;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime publishedAt;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
 
@@ -39,6 +46,7 @@ public class Article {
     private Category category;
 
     @OneToMany(mappedBy = "article")
+    @Lazy
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "article")
@@ -49,13 +57,4 @@ public class Article {
 
     @OneToMany(mappedBy = "article")
     private List<View> views;
-
-    @ManyToMany
-    @JoinTable(
-            name = "article_tags",
-            joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private List<Tag> tags;
 }
-

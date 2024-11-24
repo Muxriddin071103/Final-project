@@ -66,12 +66,4 @@ public class MyFilter extends OncePerRequestFilter {
                 .getContext()
                 .setAuthentication(authUser);
     }
-
-    public void setAuthenticationToContext(String  username,String password){
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        if (!passwordEncoder.matches(password,userDetails.getPassword())) {
-            throw new BadCredentialsException("Wrong password");
-        }
-        setAuthenticationToContext(username);
-    }
 }

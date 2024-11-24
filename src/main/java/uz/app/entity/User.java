@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import uz.app.config.LocalDateTimeAttributeConverter;
+import uz.app.entity.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -23,32 +25,42 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String firstName;
+    private String lastName;
 
     private String username;
     private String password;
-    private String email;
-    private String role;
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime createdAt;
     private boolean enabled;
+
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+    private List<Article> articles;
 
     @OneToMany(mappedBy = "user")
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "user")
-    private List<Bookmark> bookmarks;
+    @OneToMany(mappedBy = "follower")
+    private List<Subscription> following;
 
-    @OneToMany(mappedBy = "user")
-    private List<Like> likes;
+    @OneToMany(mappedBy = "followed")
+    private List<Subscription> followers;
 
-    @OneToMany(mappedBy = "user")
-    private List<View> views;
+    @OneToMany(mappedBy = "sender")
+    private List<Message> sentMessages;
 
-    @OneToMany(mappedBy = "user")
-    private List<Subscription> subscriptions;
+    @OneToMany(mappedBy = "receiver")
+    private List<Message> receivedMessages;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
@@ -68,6 +80,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.enabled;
     }
 }

@@ -21,12 +21,15 @@ public class Subscription {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "follower_id")
+    private User follower;
+
+    @ManyToOne
+    @JoinColumn(name = "followed_id")
+    private User followed;
 
     @Convert(converter = LocalDateTimeAttributeConverter.class)
     private LocalDateTime subscribedAt;
+
     private boolean isActive;
-
 }
-

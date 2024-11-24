@@ -28,8 +28,6 @@ public class JwtProvider {
                 .compact();
     }
 
-
-
     public Key signKey() {
         return Keys.hmacShaKeyFor(key.getBytes());
     }

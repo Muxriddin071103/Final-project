@@ -1,4 +1,4 @@
 package uz.app.payload;
 
-public record UserDTO(String username, Integer age, String email, String password) {
+public record UserDTO(String username,String firstName, String lastName, String password, int age) {
 }

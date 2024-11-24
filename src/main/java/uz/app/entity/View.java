@@ -9,13 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "views")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class View {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,5 +27,4 @@ public class View {
     private User user;
 
     private LocalDateTime viewedAt;
-
 }
