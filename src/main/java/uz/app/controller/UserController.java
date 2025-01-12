@@ -37,12 +37,13 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
             @ApiResponse(responseCode = "403", description = "The password was entered incorrectly. Please try again."),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User notfound")
     })
     public ResponseEntity<?> updateUserProfile(@RequestBody UpdateProfileDTO updateProfileDTO) {
         Optional<User> currentUser = userUtil.getCurrentUser();
         if (currentUser.isPresent()) {
             User user = currentUser.get();
+
 
             if (!passwordEncoder.matches(updateProfileDTO.oldPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("old password is incorrect");
@@ -51,6 +52,7 @@ public class UserController {
             user.setFirstName(updateProfileDTO.firstName());
             user.setLastName(updateProfileDTO.lastName());
             user.setUsername(updateProfileDTO.username());
+
 
             if (updateProfileDTO.newPassword() != null && !updateProfileDTO.newPassword().isEmpty()) {
                 user.setPassword(passwordEncoder.encode(updateProfileDTO.newPassword()));
@@ -62,6 +64,8 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
+
 
     @GetMapping("/articles")
     public ResponseEntity<?> getUserArticles() {
@@ -80,28 +84,12 @@ public class UserController {
         if (currentUser.isPresent()) {
             List<Bookmark> bookmarks = bookmarkService.findByUser(currentUser.get());
             List<BookmarkDTO> bookmarkDTOs = bookmarks.stream()
-                    .map(bookmark -> {
-                        Article article = bookmark.getArticle();
-                        ArticleSummaryDTO articleSummaryDTO = new ArticleSummaryDTO(
-                                article.getId(),
-                                article.getTitle(),
-                                article.getSummary(),
-                                article.getMedia().getFileName(),
-                                article.getCategory().getName(),
-                                article.getPublishedAt(),
-                                article.getStatus().name(),
-                                article.getComments().stream().map(comment -> comment.getMessage()).collect(Collectors.toList()),
-                                article.getViews().size(),
-                                article.getLikes().size()
-                        );
-                        return new BookmarkDTO(
-                                bookmark.getId(),
-                                articleSummaryDTO,
-                                bookmark.getUser().getId(),
-                                bookmark.getBookmarkedAt()
-                        );
-                    })
-                    .collect(Collectors.toList());
+                    .map(bookmark -> new BookmarkDTO(
+                            bookmark.getId(),
+                            bookmark.getArticle().getId(),
+                            bookmark.getUser().getId(),
+                            bookmark.getBookmarkedAt()
+                    )).collect(Collectors.toList());
             return ResponseEntity.ok(bookmarkDTOs);
         }
         return ResponseEntity.notFound().build();
@@ -116,10 +104,9 @@ public class UserController {
             ProfileDTO profileDTO = new ProfileDTO();
             profileDTO.setUserId(user.getId());
             profileDTO.setUsername(user.getUsername());
+            System.out.println("user: " + user.getUsername());
             if (user.getArticles() != null) {
-                List<ProfileDTO.PublishedArticleDTO> articles = user
-                        .getArticles()
-                        .stream()
+                List<ProfileDTO.PublishedArticleDTO> articles = user.getArticles().stream()
                         .map(article -> new ProfileDTO.PublishedArticleDTO(
                                 article.getId(),
                                 article.getTitle(),
@@ -146,5 +133,6 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
 
 }
